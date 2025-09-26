@@ -1,132 +1,118 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { ProductApi } from '../../../core/services/product.api';
-import { Product } from '../../../core/models/product';
+import { FormsModule } from '@angular/forms';
+import { RouterModule, Router } from '@angular/router';
+import { ProductApi, ProductResponse } from '../../../core/services/product.api';
 import { Page } from '../../../core/services/page';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   template: `
   <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 class="m-0">Quản lý sản phẩm</h2>
-      <div>
-        <button class="btn btn-danger me-2"
-                [disabled]="selected.size===0"
-                (click)="bulkDelete()">
-          <i class="bi bi-trash"></i> Xoá ({{selected.size}})
-        </button>
-        <a class="btn btn-primary" routerLink="/admin/products/new">
-          <i class="bi bi-plus-lg"></i> Thêm mới
-        </a>
-      </div>
+      <h3>Quản lý sản phẩm</h3>
+      <a class="btn btn-primary" [routerLink]="['/admin/products/new']">
+        <i class="bi bi-plus-lg"></i> Thêm sản phẩm
+      </a>
     </div>
 
-    <!-- Bảng sản phẩm -->
+    <form class="row g-2 mb-3" (submit)="$event.preventDefault(); load()">
+      <div class="col-auto">
+        <input class="form-control"
+               [(ngModel)]="keyword"
+               name="q"
+               placeholder="Tìm theo tên...">
+      </div>
+      <div class="col-auto">
+        <button class="btn btn-outline-secondary" (click)="load()">Tìm</button>
+      </div>
+    </form>
+
     <div class="table-responsive">
       <table class="table table-hover align-middle">
-        <thead class="table-light">
+        <thead>
           <tr>
-            <th><input type="checkbox" (change)="toggleAll($event)"></th>
-            <th>Ảnh</th>
+            <th>#</th>
             <th>Tên</th>
-            <th>Thương hiệu</th>
             <th>Danh mục</th>
-            <th class="text-end">Giá</th>
-            <th class="text-end">SL</th>
-            <th>Trạng thái</th>
-            <th class="text-end">Thao tác</th>
+            <th>Thương hiệu</th>
+            <th>Giá</th>
+            <th>Số lượng</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let p of page?.content">
-            <td>
-              <input type="checkbox" [checked]="selected.has(p.id)"
-                     (change)="toggle(p.id,$event)">
-            </td>
-            <td><img *ngIf="p.thumbnailUrl" [src]="p.thumbnailUrl" width="48" height="48" class="rounded"></td>
-            <td>{{p.name}}</td>
-            <td>{{p.brandName}}</td>
+            <td>{{p.id}}</td>
+            <td><a [routerLink]="['/admin/products', p.id]">{{p.name}}</a></td>
             <td>{{p.categoryName}}</td>
-            <td class="text-end">{{p.price | number:'1.0-0'}}</td>
-            <td class="text-end">{{p.quantity}}</td>
-            <td>
-              <span class="badge" [class.bg-success]="p.status==='Active'"
-                    [class.bg-secondary]="p.status!=='Active'">
-                {{p.status}}
-              </span>
-            </td>
+            <td>{{p.brandName}}</td>
+            <td>{{p.price | number:'1.0-0'}}</td>
+            <td>{{p.quantity}}</td>
             <td class="text-end">
-              <a class="btn btn-sm btn-outline-primary me-1" [routerLink]="['/admin/products', p.id]">Sửa</a>
-              <button class="btn btn-sm btn-outline-danger" (click)="remove(p.id)">Xoá</button>
+              <a class="btn btn-sm btn-outline-primary me-2"
+                 [routerLink]="['/admin/products', p.id, 'edit']">Sửa</a>
+              <button class="btn btn-sm btn-outline-danger"
+                      (click)="del(p)">Xoá</button>
             </td>
-          </tr>
-          <tr *ngIf="page?.content?.length===0">
-            <td colspan="9" class="text-center text-muted py-4">Không có sản phẩm</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Phân trang -->
-    <nav *ngIf="(page?.totalPages||0) > 1">
+    <nav *ngIf="page">
       <ul class="pagination">
-        <li class="page-item" [class.disabled]="page?.number===0">
-          <a class="page-link" href (click)="go($event,(page?.number||0)-1)">«</a>
+        <li class="page-item" [class.disabled]="page.first">
+          <button class="page-link" (click)="go(0)">«</button>
         </li>
-        <li class="page-item" *ngFor="let i of [].constructor(page?.totalPages||0); let idx=index"
-            [class.active]="idx===page?.number">
-          <a class="page-link" href (click)="go($event,idx)">{{idx+1}}</a>
+        <li class="page-item" [class.disabled]="page.first">
+          <button class="page-link" (click)="go(page.number-1)">‹</button>
         </li>
-        <li class="page-item" [class.disabled]="(page?.number||0) >= (page?.totalPages||1)-1">
-          <a class="page-link" href (click)="go($event,(page?.number||0)+1)">»</a>
+        <li class="page-item disabled">
+          <span class="page-link">{{page.number+1}} / {{page.totalPages || 1}}</span>
+        </li>
+        <li class="page-item" [class.disabled]="page.last">
+          <button class="page-link" (click)="go(page.number+1)">›</button>
+        </li>
+        <li class="page-item" [class.disabled]="page.last">
+          <button class="page-link" (click)="go(page.totalPages-1)">»</button>
         </li>
       </ul>
     </nav>
   </div>
   `
 })
-export class ProductListComponent {
-  page?: Page<Product>;
-  selected = new Set<number>();
+export class ProductListComponent implements OnInit {
+  keyword = '';
+  page?: Page<ProductResponse>;
+  size = 12;
+  index = 0;
 
-  constructor() {
+  constructor(private router: Router) {}
+
+  ngOnInit() {
     this.load();
   }
 
-  async load(page=0) {
-    this.page = await ProductApi.list({ page, size: 12, sort: 'createdAt,desc' });
-    this.selected.clear();
+  async load() {
+    this.page = await ProductApi.list({
+      keyword: this.keyword,
+      page: this.index,
+      size: this.size,
+      sort: 'id,desc'
+    });
   }
 
-  async go(e: Event, i: number) {
-    e.preventDefault();
-    await this.load(i);
+  async go(i: number) {
+    if (!this.page) return;
+    this.index = Math.max(0, Math.min(i, this.page.totalPages - 1));
+    await this.load();
   }
 
-  toggle(id: number, ev: Event) {
-    const checked = (ev.target as HTMLInputElement).checked;
-    checked ? this.selected.add(id) : this.selected.delete(id);
-  }
-
-  toggleAll(ev: Event) {
-    const checked = (ev.target as HTMLInputElement).checked;
-    this.selected.clear();
-    if (checked) this.page?.content.forEach(p => this.selected.add(p.id));
-  }
-
-  async remove(id: number) {
-    if (!confirm('Xoá sản phẩm này?')) return;
-    await ProductApi.remove(id);
-    await this.load(this.page?.number||0);
-  }
-
-  async bulkDelete() {
-    if (this.selected.size===0) return;
-    if (!confirm(`Xoá ${this.selected.size} sản phẩm?`)) return;
-    await ProductApi.bulkRemove([...this.selected]);
-    await this.load(this.page?.number||0);
+  async del(p: ProductResponse) {
+    if (!confirm(`Xoá sản phẩm #${p.id} - ${p.name}?`)) return;
+    await ProductApi.remove(p.id);
+    await this.load();
   }
 }

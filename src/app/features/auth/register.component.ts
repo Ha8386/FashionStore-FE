@@ -121,16 +121,25 @@ export class RegisterComponent {
     this.loading = true;
     try {
       await this.auth.register({
-        username: this.username.trim(),
-        email: this.email.trim(),
-        password: this.password
-      });
+      username: this.username.trim(),
+      email: this.email.trim(),
+      password: this.password,
+      role: 'USER'
+    });
+
       alert('Đăng ký thành công! Vui lòng đăng nhập.');
       this.router.navigateByUrl('/login');
-    } catch (e) {
-      alert('Đăng ký thất bại. Vui lòng thử lại.');
-      console.error(e);
-    } finally {
+    } catch (e: any) {
+        const msg = e?.response?.data?.error || e?.message || 'Đăng ký thất bại.';
+        if (e?.response?.status === 400 && e?.response?.data?.fields) {
+          const f = e.response.data.fields;
+          alert('Lỗi: ' + Object.entries(f).map(([k,v]) => `${k}: ${v}`).join('\n'));
+        } else if (String(msg).includes('Username existed')) {
+          alert('Tên đăng nhập đã tồn tại');
+        } else {
+          alert('Đăng ký thất bại. Vui lòng thử lại.');
+        }
+      } finally {
       this.loading = false;
     }
   }

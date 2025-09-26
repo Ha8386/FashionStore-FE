@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import axios, { AxiosError } from 'axios';
 
+export type Role = 'USER' | 'ADMIN';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private tokenKey = 'fs_token';
@@ -118,7 +119,7 @@ export class AuthService {
     }
   }
 
-  async register(payload: { username: string; email: string; password: string }) {
+  async register(payload: { username: string; email: string; password: string; role?: Role }) {
     return axios.post('/api/auth/register', payload).then(r => r.data);
   }
 

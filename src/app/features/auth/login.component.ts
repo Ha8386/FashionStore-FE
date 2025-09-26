@@ -83,12 +83,23 @@ export class LoginComponent {
         this.router.navigateByUrl('/');
       }
     } catch (e: any) {
-  const status = e?.response?.status;
-  if (status === 401 || status === 403) {
-    alert('Sai tài khoản hoặc mật khẩu.');
-  } else {
-    alert('Đăng nhập thất bại. Vui lòng thử lại.');
+      const status = e?.response?.status;
+      const body   = e?.response?.data;
+
+      const blocked =
+        status === 423 ||
+        String(body).includes('ACCOUNT_BLOCKED') ||
+        String(body?.message).includes('ACCOUNT_BLOCKED');
+
+      if (blocked) {
+        alert('Tài khoản bị khóa');
+      } else if (status === 401 || status === 403) {
+        alert('Sai tài khoản hoặc mật khẩu.');
+      } else {
+        alert('Đăng nhập thất bại. Vui lòng thử lại.');
+      }
+    } finally { this.loading = false; }
+
   }
 }
-  }
-}
+

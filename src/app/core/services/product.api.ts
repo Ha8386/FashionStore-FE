@@ -1,92 +1,89 @@
 import axios from './axios.config';
+import { Page } from '../services/page'; // import interface Page<T>
 
-import type { Page } from '../services/page';
-import type { Product } from '../models/product';
-
-export interface ProductSaveReq {
-  categoryId: number;
-  brandId: number;
+export interface ProductPayload {
   name: string;
   slug?: string;
   color?: string;
-  price: number;
-  quantity: number;
+  price?: number;
+  quantity?: number;
   description?: string;
-  imageUrls: string[];
-  thumbnailIndex: number;
+  categoryId: number;
+  brandId: number;
 }
 
-const ADMIN_BASE = '/api/admin/products';
-const PUBLIC_BASE = '/api/public/products';
+export interface ProductImage {
+  id: number;
+  imageUrl: string;
+  thumbnail: boolean;
+  sortOrder: number;
+}
+
+export interface ProductResponse {
+  id: number;
+  name: string;
+  slug: string;
+  categoryName: string;
+  brandName: string;
+  color: string;
+  price: number;
+  quantity: number;
+  status: string;
+  description?: string;
+  images?: ProductImage[]; // khi gọi detail thì có
+}
 
 export const ProductApi = {
-  // ==== Admin ====
-  async list(params: {
+  // === LIST ===
+  list: async (params?: {
     keyword?: string;
     categoryId?: number;
     brandId?: number;
     page?: number;
     size?: number;
     sort?: string;
-  }): Promise<Page<Product>> {
-    const res = await axios.get<Page<Product>>(ADMIN_BASE, { params });
-    return res.data;
+  }): Promise<Page<ProductResponse>> => {
+    const r = await axios.get('/api/admin/products', { params });
+    return r.data as Page<ProductResponse>; // ✅ đủ field: content, number, size, totalElements, totalPages, first, last
   },
 
-  async get(id: number): Promise<Product> {
-    const res = await axios.get<Product>(`${ADMIN_BASE}/${id}`);
-    return res.data;
+  // === DETAIL ===
+  get: async (id: number): Promise<ProductResponse> => {
+    const r = await axios.get(`/api/admin/products/${id}`);
+    return r.data;
   },
 
-  async create(payload: ProductSaveReq): Promise<{ id: number }> {
-    const res = await axios.post<{ id: number }>(ADMIN_BASE, payload);
-    return res.data;
+  // === CREATE ===
+  create: async (payload: ProductPayload): Promise<{ id: number }> => {
+    const r = await axios.post('/api/admin/products', payload);
+    return r.data;
   },
 
-  async update(id: number, payload: ProductSaveReq): Promise<void> {
-    await axios.put<void>(`${ADMIN_BASE}/${id}`, payload);
+  // === UPDATE ===
+  update: async (id: number, payload: ProductPayload): Promise<void> => {
+    await axios.put(`/api/admin/products/${id}`, payload);
   },
 
-  async remove(id: number): Promise<void> {
-    await axios.delete<void>(`${ADMIN_BASE}/${id}`);
+  // === DELETE ===
+  remove: async (id: number): Promise<void> => {
+    await axios.delete(`/api/admin/products/${id}`);
   },
 
-  async bulkRemove(ids: number[]): Promise<void[]> {
-    // Gọi trực tiếp ProductApi.remove để không phụ thuộc ngữ cảnh `this`
-    return Promise.all(ids.map(id => ProductApi.remove(id)));
-  },
-
-  async toggleStatus(id: number): Promise<Product> {
-    const res = await axios.patch<Product>(`${ADMIN_BASE}/${id}/status`, null);
-    return res.data;
-  },
-
-  async uploadImages(productId: number, files: File[]): Promise<string[]> {
+  // === UPLOAD IMAGES ===
+  uploadImages: async (id: number, files: File[]): Promise<ProductImage[]> => {
     const form = new FormData();
-    files.forEach(f => form.append('files', f));
-    const res = await axios.post<string[]>(
-      `${ADMIN_BASE}/${productId}/images`,
-      form,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    );
-    return res.data;
+    for (const f of files) form.append('files', f);
+    const r = await axios.post(`/api/admin/products/${id}/images`, form);
+    return r.data as ProductImage[];
   },
 
-  // ==== Public ====
-  async publicList(params: {
-    keyword?: string;
-    categoryId?: number;
-    brandId?: number;
-    page?: number;
-    size?: number;
-    sort?: string;
-  }): Promise<Page<Product>> {
-    const res = await axios.get<Page<Product>>(PUBLIC_BASE, { params });
-    return res.data;
+  // === DELETE IMAGE ===
+  deleteImage: async (productId: number, imageId: number): Promise<void> => {
+    await axios.delete(`/api/admin/products/${productId}/images/${imageId}`);
   },
 
-  async publicGet(id: number): Promise<Product> {
-    const res = await axios.get<Product>(`${PUBLIC_BASE}/${id}`);
-    return res.data;
+  // === SET THUMBNAIL ===
+  setThumbnail: async (productId: number, imageId: number): Promise<void> => {
+    await axios.put(`/api/admin/products/${productId}/images/${imageId}/thumbnail`, {});
   }
-} as const;
+};

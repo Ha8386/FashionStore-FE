@@ -1,58 +1,57 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { ProductApi } from '../../../core/services/product.api';
-import { BrandApi } from '../../../core/services/brand.api';
+import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { CategoryApi } from '../../../core/services/category.api';
-import { Product } from '../../../core/models/product';
+import { BrandApi } from '../../../core/services/brand.api';
+import { ProductApi, ProductResponse, ProductPayload } from '../../../core/services/product.api';
+
+type Category = { id: number; name: string };
+type Brand = { id: number; name: string };
 
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
   template: `
   <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 class="m-0">{{ id ? 'Sửa' : 'Thêm' }} Sản phẩm</h2>
-      <div class="d-flex gap-2">
-        <a class="btn btn-outline-secondary" [routerLink]="['/admin/products']">Quay lại</a>
-        <button class="btn btn-primary" type="button" (click)="save($event)">Lưu</button>
-      </div>
-    </div>
+    <h3>{{ id ? 'Sửa' : 'Thêm' }} sản phẩm</h3>
 
-    <form (ngSubmit)="save($event)" #f="ngForm" novalidate>
+    <form (ngSubmit)="save()" #f="ngForm" class="mt-3" novalidate>
       <div class="row g-3">
         <div class="col-md-6">
-          <label class="form-label">Tên sản phẩm</label>
+          <label class="form-label">Tên</label>
           <input class="form-control" [(ngModel)]="name" name="name" required />
-          <div class="text-danger small" *ngIf="submitted && !name">Vui lòng nhập tên</div>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Giá</label>
-          <input class="form-control" type="number" [(ngModel)]="price" name="price" min="0" required />
-          <div class="text-danger small" *ngIf="submitted && (price===undefined || price<0)">Giá không hợp lệ</div>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Số lượng</label>
-          <input class="form-control" type="number" [(ngModel)]="quantity" name="quantity" min="0" required />
-          <div class="text-danger small" *ngIf="submitted && (quantity===undefined || quantity<0)">Số lượng không hợp lệ</div>
         </div>
 
-        <div class="col-md-4">
-          <label class="form-label">Thương hiệu</label>
-          <select class="form-select" [(ngModel)]="brandId" name="brandId" required>
-            <option *ngFor="let b of brands" [ngValue]="b.id">{{ b.name }}</option>
-          </select>
+        <div class="col-md-6">
+          <label class="form-label">Giá</label>
+          <input type="number" class="form-control" [(ngModel)]="price" name="price" min="0" />
         </div>
-        <div class="col-md-4">
+
+        <div class="col-md-6">
+          <label class="form-label">Số lượng</label>
+          <input type="number" class="form-control" [(ngModel)]="quantity" name="quantity" min="0" required />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Màu sắc</label>
+          <input class="form-control" [(ngModel)]="color" name="color" />
+        </div>
+
+        <div class="col-md-6">
           <label class="form-label">Danh mục</label>
           <select class="form-select" [(ngModel)]="categoryId" name="categoryId" required>
+            <option [ngValue]="undefined" disabled>-- Chọn danh mục --</option>
             <option *ngFor="let c of categories" [ngValue]="c.id">{{ c.name }}</option>
           </select>
         </div>
-        <div class="col-md-4">
-          <label class="form-label">Màu sắc</label>
-          <input class="form-control" [(ngModel)]="color" name="color" />
+
+        <div class="col-md-6">
+          <label class="form-label">Thương hiệu</label>
+          <select class="form-select" [(ngModel)]="brandId" name="brandId" required>
+            <option [ngValue]="undefined" disabled>-- Chọn thương hiệu --</option>
+            <option *ngFor="let b of brands" [ngValue]="b.id">{{ b.name }}</option>
+          </select>
         </div>
 
         <div class="col-12">
@@ -60,32 +59,17 @@ import { Product } from '../../../core/models/product';
           <textarea class="form-control" rows="4" [(ngModel)]="description" name="description"></textarea>
         </div>
 
-        <!-- Ảnh -->
-        <div class="col-md-6">
-          <label class="form-label">Ảnh đại diện (URL)</label>
-          <div class="input-group">
-            <input class="form-control" [(ngModel)]="thumbnailUrl" name="thumbnailUrl" />
-            <button class="btn btn-outline-secondary" type="button" (click)="fileInput.click()">
-              Upload
-            </button>
-          </div>
-          <input #fileInput type="file" class="d-none" accept="image/*" (change)="onFile($event)">
-          <div class="mt-2" *ngIf="thumbnailUrl">
-            <img [src]="thumbnailUrl" class="rounded border" style="max-width: 220px; max-height: 220px;">
-          </div>
-        </div>
-
-        <div class="col-md-3">
-          <label class="form-label">Trạng thái</label>
-          <select class="form-select" [(ngModel)]="status" name="status">
-            <option value="Active">Active</option>
-            <option value="Closed">Closed</option>
-          </select>
+        <div class="col-12" *ngIf="id">
+          <small class="text-muted">Ảnh quản lý ở trang “Chi tiết sản phẩm”.</small>
         </div>
       </div>
 
-      <button class="btn btn-primary mt-3" type="submit">Lưu</button>
-      <a class="btn btn-secondary mt-3 ms-2" [routerLink]="['/admin/products']">Huỷ</a>
+      <div class="mt-3">
+        <button class="btn btn-primary" [disabled]="!f.form.valid || saving">
+          {{ id ? 'Cập nhật' : 'Tạo mới' }}
+        </button>
+        <a class="btn btn-secondary ms-2" [routerLink]="['/admin/products']">Quay lại</a>
+      </div>
     </form>
   </div>
   `
@@ -93,88 +77,86 @@ import { Product } from '../../../core/models/product';
 export class ProductFormComponent implements OnInit {
   id?: number;
 
-  // images
-  imageUrls: string[] = [];
-  thumbnailUrl: string = '';
-
-  // form fields
+  // model
   name = '';
-  price: number = 0;
-  quantity: number = 0;
+  price?: number;
+  quantity = 0;
   color = '';
   description = '';
-  brandId?: number;
   categoryId?: number;
-  status: 'Active' | 'Closed' = 'Active';
+  brandId?: number;
 
-  brands: { id: number; name: string }[] = [];
-  categories: { id: number; name: string }[] = [];
-  submitted = false;
+  // options
+  categories: Category[] = [];
+  brands: Brand[] = [];
 
-  constructor(private route: ActivatedRoute, private router: Router) {}
+  saving = false;
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
 
   async ngOnInit() {
-    [this.brands, this.categories] = await Promise.all([BrandApi.list(), CategoryApi.list()]);
+    const rawId = this.route.snapshot.paramMap.get('id');
+    this.id = rawId ? Number(rawId) : undefined;
 
-    const idParam = this.route.snapshot.paramMap.get('id');
-    if (idParam) {
-      this.id = +idParam;
-      const p: Product = await ProductApi.get(this.id);
+    // load options trước
+    const [cats, brs] = await Promise.all([
+      CategoryApi.list(),
+      BrandApi.list()
+    ]);
+    this.categories = cats as any;
+    this.brands = brs as any;
+
+    // nếu là edit -> load product và fill form
+    if (this.id) {
+      const p: ProductResponse = await ProductApi.get(this.id);
       this.name = p.name;
       this.price = p.price;
       this.quantity = p.quantity;
       this.color = p.color;
-      this.description = p.description || '';
-      this.thumbnailUrl = p.thumbnailUrl || '';
-      this.brandId = p.brandId;
-      this.categoryId = p.categoryId;
-      this.status = (p.status || 'Active') as any;
+      this.description = p.description ?? '';
+
+      // Nếu BE CHƯA trả categoryId/brandId thì chọn theo tên
+      // (Khuyến nghị: thêm categoryId & brandId trong ProductDetailResponse để set chính xác)
+      const cat = this.categories.find(c => c.name === p.categoryName);
+      const br  = this.brands.find(b => b.name === p.brandName);
+      if (cat) this.categoryId = cat.id;
+      if (br)  this.brandId = br.id;
     }
   }
 
-  async onFile(e: Event) {
-  const input = e.target as HTMLInputElement;
-  if (!this.id) { alert('Vui lòng lưu sản phẩm trước, sau đó mới upload ảnh.'); input.value = ''; return; }
-  if (!input.files || input.files.length === 0) return;
+  async save() {
+    if (this.saving) return;
+    this.saving = true;
 
-  const files = Array.from(input.files);
-  try {
-    const urls = await ProductApi.uploadImages(this.id, files); // <- string[]
-    if (urls?.length) {
-      this.imageUrls = urls;
-      this.thumbnailUrl = urls[0];      // <<< thay images[0].imageUrl
+    try {
+      const payload: ProductPayload = {
+        name: this.name.trim(),
+        color: this.color?.trim() || undefined,
+        price: Number(this.price ?? 0),
+        quantity: Number(this.quantity ?? 0),
+        description: this.description?.trim() || undefined,
+        categoryId: Number(this.categoryId),
+        brandId: Number(this.brandId),
+      };
+
+      if (this.id) {
+        await ProductApi.update(this.id, payload);
+      } else {
+        const res = await ProductApi.create(payload);
+        this.id = res.id;
+      }
+
+      alert('Lưu thành công!');
+      this.router.navigate(['/admin/products']);
+    } catch (e: any) {
+      console.error('[ProductForm.save] error', e?.response?.status, e?.response?.data || e?.message);
+      const data = e?.response?.data;
+      alert(typeof data === 'string' ? data : 'Lưu thất bại. Vui lòng thử lại.');
+    } finally {
+      this.saving = false;
     }
-  } catch (err) {
-    alert('Upload ảnh thất bại'); console.error(err);
-  } finally {
-    input.value = '';
-  }
-}
-
-  async save(e: Event) {
-    e.preventDefault();
-    this.submitted = true;
-    if (!this.name?.trim() || this.price < 0 || this.quantity < 0 || !this.brandId || !this.categoryId) return;
-
-    const payload = {
-      name: this.name.trim(),
-      slug: undefined,
-      color: this.color?.trim() || '',
-      price: Number(this.price),
-      quantity: Number(this.quantity),
-      description: this.description?.trim() || '',
-      brandId: this.brandId!,
-      categoryId: this.categoryId!,
-      imageUrls: this.thumbnailUrl ? [this.thumbnailUrl.trim()] : [],
-      thumbnailIndex: 0,
-    } satisfies import('../../../core/services/product.api').ProductSaveReq;
-
-    if (this.id) {
-      await ProductApi.update(this.id, payload);
-    } else {
-      const { id } = await ProductApi.create(payload);
-      this.id = id;
-    }
-    this.router.navigateByUrl('/admin/products');
   }
 }
