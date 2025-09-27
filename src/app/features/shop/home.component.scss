@@ -1,0 +1,59 @@
+/* ===== Carousel ===== */
+.carousel { position: relative; overflow: hidden; }
+.slides { position: relative; height: clamp(280px, 55vw, 520px); }
+.slide {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; transform: scale(1.02); transition: opacity .6s ease, transform .6s ease;
+}
+.slide.active { opacity: 1; transform: scale(1); }
+
+.dots {
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: 14px;
+  display: flex; gap: 8px; z-index: 3;
+}
+.dot { width: 10px; height: 10px; border-radius: 999px; border: 0; background: rgba(255,255,255,.55); cursor: pointer; }
+.dot.active { background: #fff; }
+
+.banner-search {
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: 10%;
+  width: min(900px, 92vw); border-radius: 16px; background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(4px); box-shadow: 0 16px 40px rgba(0,0,0,.12); z-index: 4;
+}
+@media (max-width: 576px) { .banner-search { bottom: 6%; } }
+
+/* ===== Product grid ===== */
+.section-title { letter-spacing: .04em; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+/* Card cao đều, nút luôn dưới đáy */
+.product-card {
+  border-radius: 12px; overflow: hidden;
+  transition: transform .15s ease, box-shadow .15s ease;
+  height: 100%;
+  display: flex; flex-direction: column;
+}
+.product-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,.08); }
+
+/* Khung ảnh thống nhất */
+.thumb-wrap {
+  position: relative; width: 100%;
+  aspect-ratio: 4 / 5;            /* bạn đang dùng 4:5 – hợp ảnh thời trang */
+  background: #fff;
+  display: grid; place-items: center;
+  border-bottom: 1px solid #f0f2f4;
+  overflow: hidden;
+}
+/* Nếu muốn ảnh không bị cắt, dùng contain; muốn phủ kín đồng đều, đổi thành cover */
+.thumb-img { width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; }
+
+.card-body { display: flex; flex-direction: column; flex: 1 1 auto; }
+.card-body .btn { margin-top: auto; }
+
+.name { font-weight: 600; font-size: .95rem; line-height: 1.25rem; min-height: 2.5rem; }
+.clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.price { color: #d32f2f; }

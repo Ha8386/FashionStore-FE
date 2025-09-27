@@ -1,0 +1,40 @@
+<div class="container py-4 fade-in">
+  <div class="d-flex justify-content-between mb-3">
+    <h2 class="fw-bold"><i class="bi bi-tags-fill text-primary me-2"></i> Quản lý thương hiệu</h2>
+    <a class="btn btn-primary" [routerLink]="['/admin/brands/new']">
+      <i class="bi bi-plus-lg"></i> Thêm mới
+    </a>
+  </div>
+
+  <table class="table table-hover table-bordered align-middle shadow-sm rounded-3" *ngIf="brands.length; else empty">
+    <thead class="table-light">
+      <tr>
+        <th>ID</th>
+        <th>Tên</th>
+        <th>Ảnh</th>
+        <th style="width:160px">Thao tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let b of brands">
+        <td>{{ b.id }}</td>
+        <td>{{ b.name }}</td>
+        <td>
+          <img *ngIf="b.imageUrl" [src]="b.imageUrl" style="height:40px" class="border rounded shadow-sm">
+        </td>
+        <td>
+          <a class="btn btn-sm btn-outline-primary me-2" [routerLink]="['/admin/brands', b.id]">
+            <i class="bi bi-pencil"></i> Sửa
+          </a>
+          <button class="btn btn-sm btn-outline-danger" (click)="remove(b.id)">
+            <i class="bi bi-trash"></i> Xóa
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #empty>
+    <div class="text-muted text-center py-5">Chưa có thương hiệu nào.</div>
+  </ng-template>
+</div>

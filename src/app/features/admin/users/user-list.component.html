@@ -1,0 +1,42 @@
+<div class="container py-4 fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="fw-bold"><i class="bi bi-people-fill text-primary me-2"></i>Người dùng</h2>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover table-bordered align-middle shadow-sm rounded-3">
+      <thead class="table-light">
+        <tr>
+          <th style="width:90px">ID</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th style="width:120px">Role</th>
+          <th style="width:120px">Status</th>
+          <th style="width:160px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let u of users()">
+          <td>{{ u.id }}</td>
+          <td class="fw-medium">{{ u.username }}</td>
+          <td>{{ u.email }}</td>
+          <td><span class="badge bg-secondary">{{ u.role }}</span></td>
+          <td>
+            <span class="badge" [ngClass]="u.status === 'ACTIVE' ? 'bg-success' : 'bg-danger'">{{ u.status }}</span>
+          </td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-primary me-1" [routerLink]="['/admin/users', u.id]">
+              <i class="bi bi-pencil"></i> Sửa
+            </a>
+            <button class="btn btn-sm btn-outline-danger" (click)="remove(u)">
+              <i class="bi bi-trash"></i> Xóa
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="users().length === 0">
+          <td colspan="6" class="text-center text-muted py-4">Chưa có người dùng</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

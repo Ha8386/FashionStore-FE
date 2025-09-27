@@ -1,0 +1,27 @@
+<div class="container py-4 fade-in">
+  <h2>{{ id ? 'Sửa' : 'Thêm' }} Thương hiệu</h2>
+
+  <form class="mt-3 card shadow-sm p-4 rounded-3" (ngSubmit)="save()" #f="ngForm" novalidate>
+    <div class="mb-3">
+      <label class="form-label">Tên thương hiệu</label>
+      <input class="form-control" [(ngModel)]="name" name="name" required />
+      <div class="text-danger small" *ngIf="submitted && !name.trim()">Vui lòng nhập tên</div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Ảnh</label>
+      <input #fileInput type="file" class="form-control" (change)="onFile($event)" accept="image/*" />
+      <div class="mt-3" *ngIf="previewUrl || imageUrl">
+        <img [src]="previewUrl || imageUrl" class="border rounded shadow-sm" style="max-height:150px">
+      </div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-primary" type="submit" [disabled]="isSaving">
+        <i class="bi" [ngClass]="isSaving ? 'bi-arrow-repeat spin' : 'bi-check-circle'"></i>
+        {{ isSaving ? 'Đang lưu…' : 'Lưu' }}
+      </button>
+      <a class="btn btn-sm btn-secondary" [routerLink]="['/admin/brands']" [class.disabled]="isSaving">Hủy</a>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,2 @@
+.nav-link { transition: background-color .15s ease, color .15s ease; }
+.nav-link.active, .nav-link:hover { background: var(--bs-primary); color: #fff; }

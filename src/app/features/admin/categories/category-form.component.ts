@@ -1,4 +1,3 @@
-// src/app/features/admin/categories/category-form.component.ts
 import { Component, OnInit, Inject, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,34 +7,10 @@ import { CategoryApi } from '../../../core/services/category.api';
 
 @Component({
   standalone: true,
+  selector: 'app-category-form',
   imports: [CommonModule, FormsModule, RouterModule],
-  template: `
-  <div class="container py-4">
-    <h2>{{ id ? 'Sửa' : 'Thêm' }} Danh mục</h2>
-
-    <form class="mt-3" (ngSubmit)="save()" #f="ngForm" novalidate>
-      <div class="mb-3">
-        <label class="form-label">Tên danh mục</label>
-        <input class="form-control" [(ngModel)]="name" name="name" required />
-        <div class="text-danger small" *ngIf="submitted && !name.trim()">Vui lòng nhập tên</div>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label d-block">Ảnh</label>
-        <input #fileInput type="file" class="form-control" (change)="onFile($event)" accept="image/*" />
-        <div class="mt-2" *ngIf="previewUrl || imageUrl">
-          <img [src]="previewUrl || imageUrl" class="border rounded" style="max-height:120px">
-        </div>
-        <div class="form-text" *ngIf="!id">Lưu trước để có ID, rồi chọn ảnh và lưu lần nữa.</div>
-      </div>
-
-      <button class="btn btn-primary me-2" type="submit" [disabled]="isSaving">
-        {{ isSaving ? 'Đang lưu…' : 'Lưu' }}
-      </button>
-      <a class="btn btn-secondary" [routerLink]="['/admin/categories']" [class.disabled]="isSaving">Hủy</a>
-    </form>
-  </div>
-  `
+  templateUrl: 'category-form.component.html',
+  styleUrls: ['category-form.component.scss']
 })
 export class CategoryFormComponent implements OnInit {
   id?: number;
@@ -95,7 +70,6 @@ export class CategoryFormComponent implements OnInit {
           alert('Upload ảnh thất bại.');
         }
       }
-
       await this.router.navigateByUrl('/admin/categories');
     } catch (e: any) {
       console.error('Save failed', e);

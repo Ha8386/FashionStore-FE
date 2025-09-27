@@ -1,0 +1,76 @@
+<div class="container py-4 fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold text-primary">Quản lý sản phẩm</h3>
+    <a class="btn btn-primary shadow-sm" [routerLink]="['/admin/products/new']">
+      <i class="bi bi-plus-lg"></i> Thêm sản phẩm
+    </a>
+  </div>
+
+  <form class="row g-2 mb-3" (submit)="$event.preventDefault(); load()">
+    <div class="col-auto">
+      <input class="form-control shadow-sm"
+             [(ngModel)]="keyword"
+             name="q"
+             placeholder="🔍 Tìm theo tên...">
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-outline-secondary shadow-sm" (click)="load()">
+        <i class="bi bi-search"></i> Tìm
+      </button>
+    </div>
+  </form>
+
+  <div class="table-responsive">
+    <table class="table table-hover table-striped align-middle shadow-sm rounded">
+      <thead class="table-primary">
+        <tr>
+          <th>#</th>
+          <th>Tên</th>
+          <th>Danh mục</th>
+          <th>Thương hiệu</th>
+          <th>Giá</th>
+          <th>Số lượng</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of page?.content" class="align-middle">
+          <td>{{p.id}}</td>
+          <td><a [routerLink]="['/admin/products', p.id]" class="fw-medium text-decoration-none">{{p.name}}</a></td>
+          <td><span class="badge bg-info text-dark">{{p.categoryName}}</span></td>
+          <td><span class="badge bg-warning text-dark">{{p.brandName}}</span></td>
+          <td><span class="text-success fw-bold">{{p.price | number:'1.0-0'}}₫</span></td>
+          <td>{{p.quantity}}</td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-info me-2 shadow-sm"
+                [routerLink]="['/admin/products', p.id]"><i class="bi bi-eye"></i></a>
+            <a class="btn btn-sm btn-outline-primary me-2 shadow-sm"
+               [routerLink]="['/admin/products', p.id, 'edit']"><i class="bi bi-pencil"></i></a>
+            <button class="btn btn-sm btn-outline-danger shadow-sm"
+                    (click)="del(p)"><i class="bi bi-trash"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <nav *ngIf="page" class="d-flex justify-content-center mt-3">
+    <ul class="pagination shadow-sm">
+      <li class="page-item" [class.disabled]="page.first">
+        <button class="page-link" (click)="go(0)">«</button>
+      </li>
+      <li class="page-item" [class.disabled]="page.first">
+        <button class="page-link" (click)="go(page.number-1)">‹</button>
+      </li>
+      <li class="page-item disabled">
+        <span class="page-link">{{page.number+1}} / {{page.totalPages || 1}}</span>
+      </li>
+      <li class="page-item" [class.disabled]="page.last">
+        <button class="page-link" (click)="go(page.number+1)">›</button>
+      </li>
+      <li class="page-item" [class.disabled]="page.last">
+        <button class="page-link" (click)="go(page.totalPages-1)">»</button>
+      </li>
+    </ul>
+  </nav>
+</div>

@@ -1,0 +1,38 @@
+<div class="container py-4 fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="fw-bold"><i class="bi bi-collection-fill text-primary me-2"></i>Danh mục</h2>
+    <a class="btn btn-sm btn-primary" [routerLink]="['/admin/categories/new']">
+      <i class="bi bi-plus-lg"></i> Thêm
+    </a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover table-bordered align-middle shadow-sm rounded-3">
+      <thead class="table-light">
+        <tr>
+          <th style="width:90px">ID</th>
+          <th>Tên</th>
+          <th style="width:120px">Ảnh</th>
+          <th style="width:160px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of categories()">
+          <td>{{ c.id }}</td>
+          <td class="fw-medium">{{ c.name }}</td>
+          <td>
+            <img *ngIf="c.imageUrl" [src]="c.imageUrl" width="64" height="48" class="object-fit-cover border rounded shadow-sm" />
+          </td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-primary me-1" [routerLink]="['/admin/categories', c.id]">
+              <i class="bi bi-pencil"></i> Sửa
+            </a>
+            <button class="btn btn-sm btn-outline-danger" (click)="remove(c.id)">
+              <i class="bi bi-trash"></i> Xóa
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,107 @@
+<app-header></app-header>
+
+<div class="container my-4">
+  <div class="row g-3">
+    <!-- Sidebar -->
+    <aside class="col-12 col-md-3">
+      <div class="card p-3 sticky-top" style="top:1rem">
+        <h5 class="mb-3">Bộ lọc tìm kiếm</h5>
+
+        <div class="mb-3">
+          <div class="fw-semibold mb-2">Theo Danh Mục</div>
+          <div class="vstack gap-2 filter-list">
+            <label *ngFor="let c of categories" class="form-check">
+              <input class="form-check-input" type="radio" name="cat"
+                     [value]="c.id" [(ngModel)]="ui.categoryId" (change)="apply()">
+              <span class="form-check-label">{{ c.name }}</span>
+            </label>
+            <button *ngIf="ui.categoryId" class="btn btn-sm btn-link ps-0" (click)="clearCategory()">Xoá chọn</button>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <div class="fw-semibold mb-2">Thương hiệu</div>
+          <div class="vstack gap-2 filter-list">
+            <label *ngFor="let b of brands" class="form-check">
+              <input class="form-check-input" type="radio" name="brand"
+                     [value]="b.id" [(ngModel)]="ui.brandId" (change)="apply()">
+              <span class="form-check-label">{{ b.name }}</span>
+            </label>
+            <button *ngIf="ui.brandId" class="btn btn-sm btn-link ps-0" (click)="clearBrand()">Xoá chọn</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="fw-semibold mb-2">Khoảng giá</div>
+          <div class="d-flex align-items-center gap-2">
+            <input type="number" class="form-control" placeholder="Từ" [(ngModel)]="ui.minPrice">
+            <span class="text-muted">—</span>
+            <input type="number" class="form-control" placeholder="Đến" [(ngModel)]="ui.maxPrice">
+          </div>
+          <div class="d-flex gap-2 mt-2">
+            <button class="btn btn-primary btn-sm" (click)="apply()">Áp dụng</button>
+            <button class="btn btn-outline-secondary btn-sm" (click)="clearPrice()">Xoá</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Results -->
+    <section class="col-12 col-md-9">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted">Sắp xếp theo</span>
+          <div class="btn-group">
+            <button class="btn btn-outline-secondary btn-sm" [class.active]="ui.sort===''" (click)="setSort('')">Liên quan</button>
+            <button class="btn btn-outline-secondary btn-sm" [class.active]="ui.sort==='createdAt,desc'" (click)="setSort('createdAt,desc')">Mới nhất</button>
+            <button class="btn btn-outline-secondary btn-sm" [class.active]="ui.sort==='sold,desc'" (click)="setSort('sold,desc')">Bán chạy</button>
+            <div class="btn-group">
+              <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">Giá</button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" (click)="setSort('price,asc')">Giá: Thấp → Cao</a></li>
+                <li><a class="dropdown-item" (click)="setSort('price,desc')">Giá: Cao → Thấp</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- grid -->
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3">
+        <div class="col" *ngFor="let p of rows">
+          <div class="card h-100 product-card">
+            <div class="thumb-wrap">
+              <img class="thumb" [src]="thumb(p)" alt="{{p.name}}" (error)="onImgErr($event)">
+            </div>
+            <div class="p-2">
+              <div class="name clamp-2" [title]="p.name">{{ p.name }}</div>
+
+              <div class="d-flex align-items-center justify-content-between mt-1">
+                <div class="price fw-semibold" *ngIf="p.price != null">{{ p.price | number }}₫</div>
+                <span class="badge" [class.bg-secondary]="(p.quantity || 0) > 0" [class.bg-danger]="(p.quantity || 0) === 0">
+                  {{ (p.quantity || 0) > 0 ? ('Số lượng: ' + (p.quantity | number)) : 'Hết hàng' }}
+                </span>
+              </div>
+
+              <a class="btn btn-sm btn-outline-primary w-100 mt-2" [routerLink]="['/product', p.id]">Xem chi tiết</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="mt-3" *ngIf="totalPages>1">
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item" [class.disabled]="page===0">
+            <button class="page-link" (click)="go(page-1)">‹</button>
+          </li>
+          <li class="page-item" *ngFor="let i of pagers" [class.active]="i===page">
+            <button class="page-link" (click)="go(i)">{{ i+1 }}</button>
+          </li>
+          <li class="page-item" [class.disabled]="page>=totalPages-1">
+            <button class="page-link" (click)="go(page+1)">›</button>
+          </li>
+        </ul>
+      </nav>
+    </section>
+  </div>
+</div>

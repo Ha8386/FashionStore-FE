@@ -1,0 +1,72 @@
+<app-header></app-header>
+
+<div class="container py-4" *ngIf="!loading && p as prod; else loadingTpl">
+  <div class="row g-4 align-items-stretch">
+
+    <!-- Gallery -->
+    <div class="col-12 col-lg-6">
+      <div class="gallery card p-2">
+        <div class="main-img-wrap">
+          <img class="main-img" [src]="activeImg || 'assets/no-image.png'" alt="{{ prod.name }}" (error)="onImgErr($event)" />
+        </div>
+
+        <div class="thumbs mt-2">
+          <button class="thumb" type="button" *ngFor="let u of imgs; let i = index"
+                  [class.active]="u===activeImg" (click)="activeImg = u">
+            <img [src]="u" alt="thumb {{i+1}}" (error)="onThumbErr($event)" />
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="col-12 col-lg-6">
+      <div class="card p-3">
+        <h3 class="mb-2">{{ prod.name }}</h3>
+
+        <div class="text-muted mb-1" *ngIf="prod.brandName || prod.categoryName">
+          <span *ngIf="prod.brandName">Thương hiệu: <strong>{{ prod.brandName }}</strong></span>
+          <span class="mx-2" *ngIf="prod.brandName && prod.categoryName">•</span>
+          <span *ngIf="prod.categoryName">Danh mục: <strong>{{ prod.categoryName }}</strong></span>
+        </div>
+
+        <div class="fs-4 fw-semibold text-danger my-2" *ngIf="prod.price != null">{{ prod.price | number }}₫</div>
+
+        <div class="mb-2">
+          <span class="text-muted">Số lượng còn:</span>
+          <span class="badge bg-success ms-1">{{ prod.quantity ?? 0 }}</span>
+        </div>
+
+        <div class="mb-2" *ngIf="prod.color">Màu sắc: <strong>{{ prod.color }}</strong></div>
+
+        <div class="my-3">
+          <label class="form-label">Chọn số lượng</label>
+          <div class="input-group" style="max-width:220px">
+            <button class="btn btn-outline-secondary" type="button" (click)="decQty()">−</button>
+            <input class="form-control text-center" type="number" [value]="qty" (input)="onQtyInput($event)" min="1" [max]="prod.quantity || 0"/>
+            <button class="btn btn-outline-secondary" type="button" (click)="incQty()">＋</button>
+          </div>
+          <div class="text-danger small mt-1" *ngIf="prod.quantity === 0">Tạm hết hàng</div>
+        </div>
+
+        <div class="d-flex gap-2 mt-3">
+          <button class="btn btn-primary" type="button" [disabled]="(prod.quantity ?? 0) <= 0">Thêm vào giỏ</button>
+          <a class="btn btn-outline-secondary" [routerLink]="['/search']">Quay lại trang tìm kiếm</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div class="col-12 mt-3" *ngIf="prod.description">
+      <div class="card p-3">
+        <h5 class="mb-2">Mô tả sản phẩm</h5>
+        <div class="text-wrap">{{ prod.description }}</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<ng-template #loadingTpl>
+  <div class="container py-5 text-muted">Đang tải chi tiết sản phẩm…</div>
+</ng-template>

@@ -1,0 +1,39 @@
+<div class="container py-4 fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="fw-bold">
+      <i class="bi bi-collection-fill text-primary me-2"></i>{{ id ? 'Sửa' : 'Thêm' }} Danh mục
+    </h2>
+    <a class="btn btn-sm btn-secondary" [routerLink]="['/admin/categories']">
+      <i class="bi bi-arrow-left"></i> Quay lại
+    </a>
+  </div>
+
+  <form class="card shadow-sm p-4 rounded-3" (ngSubmit)="save()" #f="ngForm" novalidate>
+    <div class="mb-3">
+      <label class="form-label">Tên danh mục</label>
+      <input class="form-control" [(ngModel)]="name" name="name" required placeholder="Nhập tên danh mục" />
+      <div class="text-danger small" *ngIf="submitted && !name.trim()">Vui lòng nhập tên</div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label d-block">Ảnh</label>
+      <input #fileInput type="file" class="form-control" (change)="onFile($event)" accept="image/*" />
+      <div class="mt-3" *ngIf="previewUrl || imageUrl">
+        <img [src]="previewUrl || imageUrl" class="border rounded shadow-sm" style="max-height:150px">
+      </div>
+      <div class="form-text" *ngIf="!id">
+        Lưu trước để có ID, rồi chọn ảnh & lưu lại lần nữa.
+      </div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-primary" type="submit" [disabled]="isSaving">
+        <i class="bi" [ngClass]="isSaving ? 'bi-arrow-repeat spin' : 'bi-check-circle'"></i>
+        {{ isSaving ? 'Đang lưu…' : 'Lưu' }}
+      </button>
+      <a class="btn btn-sm btn-outline-secondary" [routerLink]="['/admin/categories']" [class.disabled]="isSaving">
+        Hủy
+      </a>
+    </div>
+  </form>
+</div>

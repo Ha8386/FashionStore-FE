@@ -1,0 +1,54 @@
+<div class="container py-4 fade-in" *ngIf="ready">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="fw-bold">
+      <i class="bi bi-people-fill text-primary me-2"></i>Sửa Người dùng
+    </h2>
+    <a class="btn btn-sm btn-secondary" [routerLink]="['/admin/users']">
+      <i class="bi bi-arrow-left"></i> Quay lại
+    </a>
+  </div>
+
+  <form class="card shadow-sm p-4 rounded-3" (ngSubmit)="save()" #f="ngForm" novalidate>
+    <div class="mb-3">
+      <label class="form-label">Username</label>
+      <input class="form-control" [ngModel]="username" name="username" disabled />
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Email</label>
+      <input class="form-control" [(ngModel)]="email" name="email" required email maxlength="150" />
+      <div class="text-danger small" *ngIf="submitted && !email.trim()">Vui lòng nhập email</div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Role</label>
+        <select class="form-select" [(ngModel)]="role" name="role" required>
+          <option value="USER">USER</option>
+          <option value="ADMIN">ADMIN</option>
+        </select>
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Trạng thái</label>
+        <select class="form-select" [(ngModel)]="status" name="status" required>
+          <option value="ACTIVE">ACTIVE</option>
+          <option value="BLOCKED">BLOCKED</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Đổi mật khẩu (tùy chọn)</label>
+      <input type="password" class="form-control" [(ngModel)]="password" name="password" maxlength="255"
+             placeholder="Để trống nếu không đổi">
+    </div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-primary" type="submit" [disabled]="saving">
+        <i class="bi" [ngClass]="saving ? 'bi-arrow-repeat spin' : 'bi-check-circle'"></i>
+        {{ saving ? 'Đang lưu…' : 'Lưu' }}
+      </button>
+      <a class="btn btn-sm btn-outline-secondary" [routerLink]="['/admin/users']">Hủy</a>
+    </div>
+  </form>
+</div>

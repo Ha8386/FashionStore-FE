@@ -1,0 +1,55 @@
+<div class="container py-4 fade-in" *ngIf="p">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold text-primary">Chi tiết sản phẩm #{{ p.id }}</h3>
+    <div>
+      <a class="btn btn-outline-primary me-2 shadow-sm" [routerLink]="['/admin/products', p.id, 'edit']">
+        <i class="bi bi-pencil-square"></i> Sửa
+      </a>
+      <a class="btn btn-secondary shadow-sm" [routerLink]="['/admin/products']">
+        <i class="bi bi-arrow-left"></i> Danh sách
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <!-- Thông tin -->
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0 rounded-4 p-3 hover-card">
+        <h5 class="mb-3 text-dark">{{ p.name }}</h5>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">Danh mục: <b>{{ p.categoryName }}</b></li>
+          <li class="list-group-item">Thương hiệu: <b>{{ p.brandName }}</b></li>
+          <li class="list-group-item">Giá: <span class="badge bg-success">{{ p.price | number:'1.0-0' }}₫</span></li>
+          <li class="list-group-item">Số lượng: <b>{{ p.quantity }}</b></li>
+        </ul>
+        <div class="mt-2"><small class="text-muted">Slug: {{ p.slug }}</small></div>
+        <div class="mt-3">Mô tả: <span class="text-secondary">{{ p.description }}</span></div>
+      </div>
+    </div>
+
+    <!-- Ảnh -->
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0 rounded-4 p-3 hover-card">
+        <div class="d-flex justify-content-between align-items-center">
+          <h5 class="mb-0 text-dark">Ảnh</h5>
+          <label class="btn btn-sm btn-outline-primary shadow-sm">
+            <i class="bi bi-upload"></i> Tải lên
+            <input type="file" multiple hidden (change)="onFiles($event)">
+          </label>
+        </div>
+        <div class="row mt-3">
+          <div class="col-6 col-md-4 mb-3" *ngFor="let img of p.images">
+            <div class="position-relative border rounded overflow-hidden image-card">
+              <img [src]="img.imageUrl" class="img-fluid" />
+              <div class="p-2 d-flex justify-content-between bg-light">
+                <button class="btn btn-sm btn-outline-success" [disabled]="img.thumbnail" (click)="setThumb(img.id)">Thumb</button>
+                <button class="btn btn-sm btn-outline-danger" (click)="remove(img.id)">Xoá</button>
+              </div>
+              <div *ngIf="img.thumbnail" class="badge bg-success position-absolute top-0 start-0 m-1">Thumbnail</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

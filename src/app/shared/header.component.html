@@ -1,0 +1,36 @@
+<header class="border-bottom bg-white">
+  <div class="container py-2 d-flex align-items-center gap-3">
+    <a class="d-flex align-items-center text-decoration-none" routerLink="/">
+      <img src="assets/logo.png" alt="Logo" height="36" class="me-2"/>
+      <span class="h5 mb-0 fw-bold text-dark">FashionStore</span>
+    </a>
+
+    <div class="ms-auto d-flex align-items-center gap-2">
+      <ng-container *ngIf="!loggedIn; else logged">
+        <a class="btn btn-outline-primary" routerLink="/login">Đăng nhập</a>
+      </ng-container>
+
+      <ng-template #logged>
+        <span class="me-2">Xin chào, <strong>{{ userName }}</strong></span>
+        <button class="btn btn-danger" (click)="logout()">
+          <i class="bi bi-box-arrow-right me-1"></i>Đăng xuất
+        </button>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- Navigation categories -->
+  <nav class="bg-light border-top" *ngIf="categories.length">
+    <div class="container">
+      <ul class="nav nav-pills justify-content-center py-2">
+        <li class="nav-item" *ngFor="let c of categories">
+          <a class="nav-link" 
+             [routerLink]="['/search']" 
+             [queryParams]="{ categoryId: c.id }">
+            {{ c.name }}
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+</header>

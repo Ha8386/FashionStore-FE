@@ -1,6 +1,8 @@
+// src/app/core/services/product.api.ts
 import axios from './axios.config';
-import { Page } from '../services/page'; // import interface Page<T>
+import { Page } from '../services/page';
 
+/* ====== Types ====== */
 export interface ProductPayload {
   name: string;
   slug?: string;
@@ -12,9 +14,18 @@ export interface ProductPayload {
   brandId: number;
 }
 
+export type ProductRow = {
+  id: number;
+  name: string;
+  price?: number;
+  quantity?: number;
+  description?: string;
+  status?: string;
+};
+
 export interface ProductImage {
   id: number;
-  imageUrl: string;
+  imageUrl: string;      // camelCase cho Admin (BE trả imageUrl)
   thumbnail: boolean;
   sortOrder: number;
 }
@@ -33,57 +44,83 @@ export interface ProductResponse {
   images?: ProductImage[]; // khi gọi detail thì có
 }
 
+/* ====== API ====== */
 export const ProductApi = {
-  // === LIST ===
-  list: async (params?: {
+  /* ---------- PUBLIC (shop/search) ---------- */
+
+  /** Danh sách sản phẩm public + lọc + sắp xếp + phân trang */
+  listPublic: (params?: {
+    keyword?: string;
+    categoryId?: number;
+    brandId?: number;
+    minPrice?: number;
+    maxPrice?: number;
+    page?: number;
+    size?: number;
+    sort?: string; // "createdAt,desc" | "price,asc" ...
+  }): Promise<Page<ProductResponse>> =>
+    axios.get('/api/public/products', { params }).then(r => r.data as Page<ProductResponse>),
+
+  /** Chi tiết public */
+  getPublic: (id: number): Promise<ProductResponse> =>
+    axios.get(`/api/public/products/${id}`).then(r => r.data as ProductResponse),
+
+  /** Ảnh sản phẩm (public) – nếu cần lấy riêng */
+  imagesPublic: (productId: number): Promise<Array<{
+    id: number;
+    image_url: string;
+    is_thumbnail: boolean;
+    sort_order: number;
+  }>> => axios.get(`/api/public/products/${productId}/images`).then(r => r.data),
+
+  /** Danh mục/Thương hiệu (public) */
+  categories: () =>
+    axios.get<Array<{ id: number; name: string }>>('/api/public/categories').then(r => r.data),
+
+  brands: () =>
+    axios.get<Array<{ id: number; name: string }>>('/api/public/brands').then(r => r.data),
+
+  /* ---------- ADMIN (quản trị) ---------- */
+
+  listAdmin: (params?: {
     keyword?: string;
     categoryId?: number;
     brandId?: number;
     page?: number;
     size?: number;
     sort?: string;
-  }): Promise<Page<ProductResponse>> => {
-    const r = await axios.get('/api/admin/products', { params });
-    return r.data as Page<ProductResponse>; // ✅ đủ field: content, number, size, totalElements, totalPages, first, last
-  },
+  }): Promise<Page<ProductResponse>> =>
+    axios.get('/api/admin/products', { params }).then(r => r.data as Page<ProductResponse>),
 
-  // === DETAIL ===
-  get: async (id: number): Promise<ProductResponse> => {
-    const r = await axios.get(`/api/admin/products/${id}`);
-    return r.data;
-  },
+  getAdmin: (id: number): Promise<ProductResponse> =>
+    axios.get(`/api/admin/products/${id}`).then(r => r.data as ProductResponse),
 
-  // === CREATE ===
-  create: async (payload: ProductPayload): Promise<{ id: number }> => {
-    const r = await axios.post('/api/admin/products', payload);
-    return r.data;
-  },
+  create: (payload: ProductPayload): Promise<{ id: number }> =>
+    axios.post('/api/admin/products', payload).then(r => r.data),
 
-  // === UPDATE ===
-  update: async (id: number, payload: ProductPayload): Promise<void> => {
-    await axios.put(`/api/admin/products/${id}`, payload);
-  },
+  update: (id: number, payload: ProductPayload): Promise<void> =>
+    axios.put(`/api/admin/products/${id}`, payload).then(() => {}),
 
-  // === DELETE ===
-  remove: async (id: number): Promise<void> => {
-    await axios.delete(`/api/admin/products/${id}`);
-  },
+  remove: (id: number): Promise<void> =>
+    axios.delete(`/api/admin/products/${id}`).then(() => {}),
 
-  // === UPLOAD IMAGES ===
-  uploadImages: async (id: number, files: File[]): Promise<ProductImage[]> => {
+  uploadImages: (id: number, files: File[]): Promise<ProductImage[]> => {
     const form = new FormData();
     for (const f of files) form.append('files', f);
-    const r = await axios.post(`/api/admin/products/${id}/images`, form);
-    return r.data as ProductImage[];
+    return axios.post(`/api/admin/products/${id}/images`, form).then(r => r.data as ProductImage[]);
   },
 
-  // === DELETE IMAGE ===
-  deleteImage: async (productId: number, imageId: number): Promise<void> => {
-    await axios.delete(`/api/admin/products/${productId}/images/${imageId}`);
-  },
+  deleteImage: (productId: number, imageId: number): Promise<void> =>
+    axios.delete(`/api/admin/products/${productId}/images/${imageId}`).then(() => {}),
 
-  // === SET THUMBNAIL ===
-  setThumbnail: async (productId: number, imageId: number): Promise<void> => {
-    await axios.put(`/api/admin/products/${productId}/images/${imageId}/thumbnail`, {});
-  }
+  setThumbnail: (productId: number, imageId: number): Promise<void> =>
+    axios.put(`/api/admin/products/${productId}/images/${imageId}/thumbnail`, {}).then(() => {}),
+
+  /* ---------- ALIASES (tương thích code cũ) ---------- */
+  list(params?: any) {
+    return (this as any).listAdmin(params);
+  },
+  get(id: number) {
+    return (this as any).getAdmin(id);
+  },
 };
